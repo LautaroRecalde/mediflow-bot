@@ -12,12 +12,35 @@ import express        from "express";
 import { urlencoded } from "express";
 import twilio         from "twilio";
 import admin          from "firebase-admin";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 
 // ─── FIREBASE ADMIN INIT ──────────────────────────────────────────────────────
-const serviceAccount = JSON.parse(
-  readFileSync("./serviceAccountKey.json", "utf8")
-);
+//
+// Prioridad:
+//   1. Variable de entorno FIREBASE_SERVICE_ACCOUNT (producción en Render)
+//   2. Archivo local ./serviceAccountKey.json (desarrollo local)
+//
+let serviceAccount;
+
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    console.log("🔑 Firebase: usando credenciales desde FIREBASE_SERVICE_ACCOUNT (env var)");
+  } catch (err) {
+    console.error("❌ Error al parsear FIREBASE_SERVICE_ACCOUNT:", err.message);
+    process.exit(1);
+  }
+} else if (existsSync("./serviceAccountKey.json")) {
+  serviceAccount = JSON.parse(readFileSync("./serviceAccountKey.json", "utf8"));
+  console.log("🔑 Firebase: usando credenciales desde serviceAccountKey.json (local)");
+} else {
+  console.error(
+    "❌ No se encontraron credenciales de Firebase.\n" +
+    "   → En producción: definí la variable FIREBASE_SERVICE_ACCOUNT\n" +
+    "   → En local: colocá el archivo serviceAccountKey.json en la raíz"
+  );
+  process.exit(1);
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

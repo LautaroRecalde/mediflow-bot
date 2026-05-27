@@ -1,0 +1,14 @@
+{
+  "name": "mediflow-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev":   "node --watch server.js"
+  },
+  "dependencies": {
+    "express":         "^4.18.2",
+    "firebase-admin":  "^12.0.0",
+    "twilio":          "^5.0.0"
+  }
+}
